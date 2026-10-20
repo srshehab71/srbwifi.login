@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-$(if refresh-timeout)<meta http-equiv="refresh" content="$(refresh-timeout-secs)">$(endif)
 <title>SRB WiFi Zone</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,12 +46,12 @@ p.hint{color:var(--muted);font-size:clamp(16px,3vmin,30px);line-height:1.5}
   padding:clamp(18px,4vmin,48px);
   display:grid;gap:clamp(12px,2.6vmin,24px);
 }
-dl{display:grid;gap:clamp(8px,1.8vmin,16px)}
-.row{display:flex;justify-content:space-between;gap:16px;
+.row{display:none;justify-content:space-between;gap:16px;
   border-bottom:1px solid var(--line);padding-bottom:clamp(6px,1.4vmin,12px);
   font-size:clamp(17px,3.4vmin,32px)}
-.row dt{color:var(--muted)}
-.row dd{font-weight:700;text-align:right}
+.row.show{display:flex}
+.row span{color:var(--muted)}
+.row strong{text-align:right}
 a.btn{
   display:block;text-align:center;text-decoration:none;
   background:var(--accent);color:var(--accent-ink);font-weight:700;
@@ -75,16 +74,26 @@ a.btn:focus{border-color:#fff;box-shadow:0 0 0 clamp(4px,1vmin,10px) rgba(255,20
   </div>
 
   <div class="card">
-    <dl>
-      <div class="row"><dt>মোবাইল নম্বর</dt><dd>$(username)</dd></div>
-      <div class="row"><dt>আইপি</dt><dd>$(ip)</dd></div>
-      <div class="row"><dt>ব্যবহৃত সময়</dt><dd>$(uptime)</dd></div>
-      $(if session-time-left)<div class="row"><dt>বাকি সময়</dt><dd>$(session-time-left)</dd></div>$(endif)
-      <div class="row"><dt>ডাউনলোড</dt><dd>$(bytes-out-nice)</dd></div>
-      <div class="row"><dt>আপলোড</dt><dd>$(bytes-in-nice)</dd></div>
-    </dl>
-    <a class="btn" href="$(link-logout)" autofocus>লগআউট করুন</a>
+    <div class="row" id="r"><span>মোবাইল নম্বর</span><strong id="u"></strong></div>
+    <a class="btn" id="out" href="http://10.10.10.10/logout" autofocus>লগআউট করুন</a>
   </div>
 </main>
+
+<script>
+(function(){
+  var m=location.search.replace(/^\?/,'').split('&'), u='';
+  for(var i=0;i<m.length;i++){
+    var p=m[i].split('=');
+    if(p[0]==='username'){
+      try{u=decodeURIComponent((p[1]||'').replace(/\+/g,' '));}catch(x){}
+    }
+  }
+  if(u){
+    document.getElementById('u').textContent=u;
+    document.getElementById('r').className='row show';
+  }
+  document.getElementById('out').focus();
+})();
+</script>
 </body>
 </html>

@@ -19,11 +19,11 @@ body{
   background:radial-gradient(120% 90% at 85% 0%,#1b3a5c 0%,var(--bg) 55%);
   color:var(--text);
   font-family:"Hind Siliguri","Noto Sans Bengali","Anek Bangla","Baloo Da 2","Mukta","Galada",
-    "SolaimanLipi","Kalpurush","Siyam Rupali","Nikosh","NikoshBAN","Lohit Bengali","Mitra Mono",
+    "SolaimanLipi","Kalpurush","Siyam Rupali","Nikosh","NikoshBAN","Lohit Bengali",
     "Vrinda","Shonar Bangla","Nirmala UI","Bangla MN","Kohinoor Bangla","Noto Serif Bengali",
     "FreeSans","DejaVu Sans","Arial Unicode MS",system-ui,sans-serif;
   display:flex;align-items:center;justify-content:center;
-  padding:var(--pad);overflow:hidden;
+  padding:var(--pad);overflow:auto;
   -webkit-tap-highlight-color:transparent;
 }
 main{
@@ -61,7 +61,12 @@ input:focus,button:focus{
   transform:scale(1.02);
 }
 button:active{transform:scale(.98)}
-.err{min-height:1.4em;color:var(--err);font-size:clamp(16px,3vmin,28px)}
+.err{display:none;border:2px solid var(--err);border-radius:clamp(12px,2.4vmin,22px);
+  padding:clamp(10px,2vmin,20px);background:rgba(255,138,122,.1)}
+.err.show{display:block}
+.err b{display:block;color:var(--err);font-size:clamp(20px,4vmin,38px);margin-bottom:.25em}
+.err span{font-size:clamp(16px,3vmin,30px);line-height:1.5}
+.small{min-height:1.4em;color:var(--err);font-size:clamp(16px,3vmin,28px)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -73,21 +78,58 @@ button:active{transform:scale(.98)}
   </div>
 
   <form id="f" autocomplete="off" novalidate>
+    <div class="err" id="box" role="alert" aria-live="assertive">
+      <b id="et"></b><span id="em"></span>
+    </div>
     <label for="n">মোবাইল নম্বর</label>
     <input id="n" type="tel" inputmode="numeric" pattern="[0-9]*"
            enterkeyhint="go" maxlength="30" placeholder="017XXXXXXXX" autofocus>
-    <div class="err" id="e" role="alert" aria-live="polite"></div>
+    <div class="small" id="e"></div>
     <button id="b" type="submit">লগইন করুন</button>
   </form>
 </main>
 
 <script>
 (function(){
+  var LOGIN="http://10.10.10.10/login";
+
   var f=document.getElementById('f'), n=document.getElementById('n'),
-      b=document.getElementById('b'), e=document.getElementById('e');
+      b=document.getElementById('b'), e=document.getElementById('e'),
+      box=document.getElementById('box'),
+      et=document.getElementById('et'), em=document.getElementById('em');
   var bn='০১২৩৪৫৬৭৮৯';
 
-  // শুধু ইংরেজি/বাংলা অঙ্ক গ্রহণ করবে; বাংলা অঙ্ক ইংরেজিতে রূপান্তর হবে
+  // ঠিকানার ?error=...&username=... পড়া (মাইক্রোটিক এগুলো পাঠায়)
+  function param(name){
+    var m=location.search.replace(/^\?/,'').split('&');
+    for(var i=0;i<m.length;i++){
+      var p=m[i].split('=');
+      if(p[0]===name){
+        try{return decodeURIComponent((p[1]||'').replace(/\+/g,' '));}catch(x){return '';}
+      }
+    }
+    return '';
+  }
+
+  function bangla(s){
+    s=s.toLowerCase();
+    if(s.indexOf('invalid')>-1)
+      return ['ইউজার পাওয়া যায়নি','এই নম্বরে কোনো সক্রিয় ইউজার নেই। অনুগ্রহ করে রিচার্জ করুন।'];
+    if(s.indexOf('limit')>-1 || s.indexOf('expire')>-1)
+      return ['প্যাকেজের মেয়াদ শেষ','আপনার প্যাকেজের মেয়াদ বা ডেটা শেষ হয়ে গেছে। অনুগ্রহ করে রিচার্জ করুন।'];
+    if(s.indexOf('already')>-1 || s.indexOf('simultaneous')>-1)
+      return ['আগে থেকেই লগইন আছে','এই নম্বর দিয়ে অন্য ডিভাইসে লগইন করা আছে। ওই ডিভাইসে লগআউট করে আবার চেষ্টা করুন।'];
+    return ['লগইন হয়নি','লগইন করা যায়নি। নম্বরটি আবার দেখুন। সমস্যা থাকলে রিচার্জ করুন বা যোগাযোগ করুন।'];
+  }
+
+  var err=param('error'), user=param('username');
+  if(err){
+    var m=bangla(err);
+    et.textContent=m[0]; em.textContent=m[1];
+    box.className='err show';
+    n.value=user.replace(/\D/g,'');
+  }
+
   n.addEventListener('input',function(){
     var v=n.value.replace(/[০-৯]/g,function(c){return bn.indexOf(c)})
                  .replace(/\D/g,'');
@@ -95,12 +137,10 @@ button:active{transform:scale(.98)}
     e.textContent='';
   });
 
-  // রিমোটের ডিরেকশন কী দিয়ে ইনপুট ↔ বোতাম
   document.addEventListener('keydown',function(ev){
     var k=ev.key, a=document.activeElement;
     if(k==='ArrowDown' && a===n){ev.preventDefault();b.focus();}
     else if(k==='ArrowUp' && a===b){ev.preventDefault();n.focus();}
-    else if(a===n && (k==='ArrowRight'||k==='ArrowLeft')){/* কার্সার সরবে */}
     else if(a===b && (k==='ArrowRight'||k==='ArrowLeft')){ev.preventDefault();}
   });
 
@@ -109,7 +149,7 @@ button:active{transform:scale(.98)}
     var v=n.value.trim();
     if(!v){e.textContent='মোবাইল নম্বর লিখুন';n.focus();return;}
     var q=encodeURIComponent(v);
-    window.location.href='http://10.10.10.10/login?username='+q+'&password='+q;
+    window.location.href=LOGIN+'?username='+q+'&password='+q;
   });
 
   n.focus();

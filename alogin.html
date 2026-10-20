@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="2; url=https://srshehab71.github.io/srbwifi.login/status.html">
+<title>SRB WiFi Zone</title>
+<script>
+// লগইন সফল হলে মাইক্রোটিক এই পেজ খোলে; এখান থেকেই গিটহাবের স্ট্যাটাস পেজে পাঠানো হয়।
+var u="$(username)";
+if(u.indexOf('$(')===0) u="";
+location.replace('https://srshehab71.github.io/srbwifi.login/status.html'+(u?'?username='+encodeURIComponent(u):''));
+</script>
+</head>
+<body style="font-family:sans-serif;text-align:center;padding:40px">
+<a href="https://srshehab71.github.io/srbwifi.login/status.html">Continue</a>
+</body>
+</html>
