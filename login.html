@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SRB WiFi Zone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Anek+Bangla:wght@400;700&family=Baloo+Da+2:wght@400;700&family=Mukta:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1b2c; --panel:#16283f; --line:#2c4766; --text:#f3f6fa; --muted:#9db2c9;
+  --accent:#ffc83d; --accent-ink:#1a1400; --err:#ff8a7a;
+  --pad:clamp(16px,4vmin,48px);
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{
+  background:radial-gradient(120% 90% at 85% 0%,#1b3a5c 0%,var(--bg) 55%);
+  color:var(--text);
+  font-family:"Hind Siliguri","Noto Sans Bengali","Anek Bangla","Baloo Da 2","Mukta","Galada",
+    "SolaimanLipi","Kalpurush","Siyam Rupali","Nikosh","NikoshBAN","Lohit Bengali",
+    "Vrinda","Shonar Bangla","Nirmala UI","Bangla MN","Kohinoor Bangla","Noto Serif Bengali",
+    "FreeSans","DejaVu Sans","Arial Unicode MS",system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;
+  padding:var(--pad);overflow:auto;
+  -webkit-tap-highlight-color:transparent;
+}
+main{
+  width:100%;max-width:min(1100px,100%);
+  display:grid;gap:clamp(16px,4vmin,56px);
+  grid-template-columns:1fr;align-items:center;
+}
+@media (orientation:landscape){ main{grid-template-columns:1fr 1.1fr} }
+h1{font-size:clamp(28px,7vmin,76px);line-height:1.2;font-weight:700}
+p.hint{margin-top:.6em;color:var(--muted);font-size:clamp(16px,3vmin,30px)}
+form{
+  background:var(--panel);border:2px solid var(--line);
+  border-radius:clamp(16px,3vmin,32px);
+  padding:clamp(18px,4vmin,48px);
+  display:grid;gap:clamp(14px,3vmin,28px);
+}
+label{font-size:clamp(18px,3.4vmin,32px);color:var(--muted)}
+input,button{
+  font:inherit;width:100%;border-radius:clamp(12px,2.4vmin,22px);
+  min-height:clamp(60px,12vmin,120px);
+  font-size:clamp(26px,6vmin,60px);
+  outline:none;transition:transform .12s,box-shadow .12s,border-color .12s;
+}
+input{
+  background:#0b1624;color:var(--text);border:3px solid var(--line);
+  padding:0 .6em;letter-spacing:.12em;text-align:center;
+}
+button{
+  background:var(--accent);color:var(--accent-ink);border:3px solid var(--accent);
+  font-weight:700;cursor:pointer;
+}
+input:focus,button:focus{
+  border-color:#fff;
+  box-shadow:0 0 0 clamp(4px,1vmin,10px) rgba(255,200,61,.55);
+  transform:scale(1.02);
+}
+button:active{transform:scale(.98)}
+.err{display:none;border:2px solid var(--err);border-radius:clamp(12px,2.4vmin,22px);
+  padding:clamp(10px,2vmin,20px);background:rgba(255,138,122,.1)}
+.err.show{display:block}
+.err b{display:block;color:var(--err);font-size:clamp(20px,4vmin,38px);margin-bottom:.25em}
+.err span{font-size:clamp(16px,3vmin,30px);line-height:1.5}
+.small{min-height:1.4em;color:var(--err);font-size:clamp(16px,3vmin,28px)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <h1>SRB WiFi Zone</h1>
+    <p class="hint">টিভি লগইন সিস্টেম</p>
+  </div>
+
+  <form id="f" autocomplete="off" novalidate>
+    <div class="err" id="box" role="alert" aria-live="assertive">
+      <b id="et"></b><span id="em"></span>
+    </div>
+    <label for="n">মোবাইল নম্বর</label>
+    <input id="n" type="tel" inputmode="numeric" pattern="[0-9]*"
+           enterkeyhint="go" maxlength="30" placeholder="017XXXXXXXX" autofocus>
+    <div class="small" id="e"></div>
+    <button id="b" type="submit">লগইন করুন</button>
+  </form>
+</main>
+
+<script>
+(function(){
+  // এই তিনটি মান মাইক্রোটিক নিজে বসিয়ে দেয়
+  var ERR="$(error)", USER="$(username)", LOGIN="$(link-login-only)";
+  function real(v){return v && v.indexOf('$(')!==0;}
+  if(!real(LOGIN)) LOGIN="http://10.10.10.10/login";
+
+  var f=document.getElementById('f'), n=document.getElementById('n'),
+      b=document.getElementById('b'), e=document.getElementById('e'),
+      box=document.getElementById('box'),
+      et=document.getElementById('et'), em=document.getElementById('em');
+  var bn='০১২৩৪৫৬৭৮৯';
+
+  // মাইক্রোটিকের এরর অনুযায়ী বাংলা বার্তা
+  function bangla(s){
+    s=s.toLowerCase();
+    if(s.indexOf('invalid')>-1)
+      return ['ইউজার পাওয়া যায়নি','এই নম্বরে কোনো সক্রিয় ইউজার নেই। অনুগ্রহ করে রিচার্জ করুন।'];
+    if(s.indexOf('limit')>-1 || s.indexOf('expire')>-1)
+      return ['প্যাকেজের মেয়াদ শেষ','আপনার প্যাকেজের মেয়াদ বা ডেটা শেষ হয়ে গেছে। অনুগ্রহ করে রিচার্জ করুন।'];
+    if(s.indexOf('already')>-1 || s.indexOf('simultaneous')>-1)
+      return ['আগে থেকেই লগইন আছে','এই নম্বর দিয়ে অন্য ডিভাইসে লগইন করা আছে। ওই ডিভাইসে লগআউট করে আবার চেষ্টা করুন।'];
+    return ['লগইন হয়নি','লগইন করা যায়নি। নম্বরটি আবার দেখুন। সমস্যা থাকলে রিচার্জ করুন বা যোগাযোগ করুন।'];
+  }
+
+  if(real(ERR)){
+    var m=bangla(ERR);
+    et.textContent=m[0]; em.textContent=m[1];
+    box.className='err show';
+    if(real(USER)) n.value=USER.replace(/\D/g,'');
+  }
+
+  // শুধু ইংরেজি/বাংলা অঙ্ক গ্রহণ করবে; বাংলা অঙ্ক ইংরেজিতে রূপান্তর হবে
+  n.addEventListener('input',function(){
+    var v=n.value.replace(/[০-৯]/g,function(c){return bn.indexOf(c)})
+                 .replace(/\D/g,'');
+    if(v!==n.value)n.value=v;
+    e.textContent='';
+  });
+
+  // রিমোটের ডিরেকশন কী দিয়ে ইনপুট ↔ বোতাম
+  document.addEventListener('keydown',function(ev){
+    var k=ev.key, a=document.activeElement;
+    if(k==='ArrowDown' && a===n){ev.preventDefault();b.focus();}
+    else if(k==='ArrowUp' && a===b){ev.preventDefault();n.focus();}
+    else if(a===b && (k==='ArrowRight'||k==='ArrowLeft')){ev.preventDefault();}
+  });
+
+  f.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var v=n.value.trim();
+    if(!v){e.textContent='মোবাইল নম্বর লিখুন';n.focus();return;}
+    var q=encodeURIComponent(v);
+    window.location.href=LOGIN+'?username='+q+'&password='+q;
+  });
+
+  n.focus();
+})();
+</script>
+</body>
+</html>

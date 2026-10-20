@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+$(if refresh-timeout)<meta http-equiv="refresh" content="$(refresh-timeout-secs)">$(endif)
+<title>SRB WiFi Zone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Anek+Bangla:wght@400;700&family=Baloo+Da+2:wght@400;700&family=Mukta:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1b2c; --panel:#16283f; --line:#2c4766; --text:#f3f6fa; --muted:#9db2c9;
+  --accent:#ffc83d; --accent-ink:#1a1400; --ok:#5fd68a;
+  --pad:clamp(16px,4vmin,48px);
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{
+  background:radial-gradient(120% 90% at 85% 0%,#1b3a5c 0%,var(--bg) 55%);
+  color:var(--text);
+  font-family:"Hind Siliguri","Noto Sans Bengali","Anek Bangla","Baloo Da 2","Mukta","Galada",
+    "SolaimanLipi","Kalpurush","Siyam Rupali","Nikosh","NikoshBAN","Lohit Bengali",
+    "Vrinda","Shonar Bangla","Nirmala UI","Bangla MN","Kohinoor Bangla","Noto Serif Bengali",
+    "FreeSans","DejaVu Sans","Arial Unicode MS",system-ui,sans-serif;
+  display:flex;align-items:center;justify-content:center;
+  padding:var(--pad);overflow:auto;
+}
+main{
+  width:100%;max-width:min(1100px,100%);
+  display:grid;gap:clamp(16px,4vmin,56px);
+  grid-template-columns:1fr;align-items:center;
+}
+@media (orientation:landscape){ main{grid-template-columns:1fr 1.1fr} }
+.ok{display:flex;flex-direction:column;gap:.5em}
+.tick{
+  width:clamp(64px,16vmin,140px);height:clamp(64px,16vmin,140px);border-radius:50%;
+  background:rgba(95,214,138,.14);border:4px solid var(--ok);
+  display:flex;align-items:center;justify-content:center;margin-bottom:.3em;
+}
+.tick svg{width:55%;height:55%}
+h1{font-size:clamp(28px,7vmin,72px);line-height:1.2;font-weight:700}
+p.hint{color:var(--muted);font-size:clamp(16px,3vmin,30px);line-height:1.5}
+.card{
+  background:var(--panel);border:2px solid var(--line);
+  border-radius:clamp(16px,3vmin,32px);
+  padding:clamp(18px,4vmin,48px);
+  display:grid;gap:clamp(12px,2.6vmin,24px);
+}
+dl{display:grid;gap:clamp(8px,1.8vmin,16px)}
+.row{display:flex;justify-content:space-between;gap:16px;
+  border-bottom:1px solid var(--line);padding-bottom:clamp(6px,1.4vmin,12px);
+  font-size:clamp(17px,3.4vmin,32px)}
+.row dt{color:var(--muted)}
+.row dd{font-weight:700;text-align:right}
+a.btn{
+  display:block;text-align:center;text-decoration:none;
+  background:var(--accent);color:var(--accent-ink);font-weight:700;
+  border:3px solid var(--accent);border-radius:clamp(12px,2.4vmin,22px);
+  padding:clamp(14px,3vmin,28px);font-size:clamp(22px,5vmin,48px);
+  outline:none;transition:transform .12s,box-shadow .12s,border-color .12s;
+}
+a.btn:focus{border-color:#fff;box-shadow:0 0 0 clamp(4px,1vmin,10px) rgba(255,200,61,.55);transform:scale(1.02)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="ok">
+    <div class="tick">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5fd68a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+    </div>
+    <h1>লগইন সফল হয়েছে</h1>
+    <p class="hint">SRB WiFi Zone-এ আপনাকে স্বাগতম। এখন আপনি ইন্টারনেট ব্যবহার করতে পারবেন।</p>
+  </div>
+
+  <div class="card">
+    <dl>
+      <div class="row"><dt>মোবাইল নম্বর</dt><dd>$(username)</dd></div>
+      <div class="row"><dt>আইপি</dt><dd>$(ip)</dd></div>
+      <div class="row"><dt>ব্যবহৃত সময়</dt><dd>$(uptime)</dd></div>
+      $(if session-time-left)<div class="row"><dt>বাকি সময়</dt><dd>$(session-time-left)</dd></div>$(endif)
+      <div class="row"><dt>ডাউনলোড</dt><dd>$(bytes-out-nice)</dd></div>
+      <div class="row"><dt>আপলোড</dt><dd>$(bytes-in-nice)</dd></div>
+    </dl>
+    <a class="btn" href="$(link-logout)" autofocus>লগআউট করুন</a>
+  </div>
+</main>
+</body>
+</html>
